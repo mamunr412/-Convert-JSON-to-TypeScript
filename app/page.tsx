@@ -28,6 +28,10 @@ import { debounce } from "lodash";
 function jsonToTypeScript(json: string): string {
   try {
     const obj = JSON.parse(json);
+    if (Array.isArray(obj)) {
+      const itemType = generateTypeScriptInterface(obj[0], "Root");
+      return `export type RootType = Root[];\n\n${itemType}`;
+    }
     return generateTypeScriptInterface(obj, "RootType");
   } catch (error) {
     throw new Error("Invalid JSON");
@@ -35,33 +39,34 @@ function jsonToTypeScript(json: string): string {
 }
 
 function generateTypeScriptInterface(obj: any, interfaceName: string): string {
-  let output = `interface ${interfaceName} {\n`;
+  let output = `export interface ${interfaceName} {\n`;
   const nestedInterfaces: string[] = [];
 
   for (const [key, value] of Object.entries(obj)) {
-    const type = getType(value, key, nestedInterfaces);
-    output += `  ${key}: ${type};\n`;
+    const { type, nested } = getType(value, key);
+    output += `  ${key}${type.endsWith("?") ? "" : ":"} ${type};\n`;
+    nestedInterfaces.push(...nested);
   }
 
   output += "}\n\n";
-  output += nestedInterfaces.join("\n\n");
+  output += nestedInterfaces.join("\n");
   return output.trim();
 }
 
-function getType(value: any, key: string, nestedInterfaces: string[]): string {
-  if (value === null) return "null";
+function getType(value: any, key: string): { type: string; nested: string[] } {
+  if (value === null) return { type: "null", nested: [] };
   if (Array.isArray(value)) {
-    if (value.length === 0) return "any[]";
-    const itemType = typeof value[0];
-    return `${itemType}[]`;
+    if (value.length === 0) return { type: "any[]", nested: [] };
+    const { type, nested } = getType(value[0], `${key}Item`);
+    return { type: `${type}[]`, nested };
   }
   if (typeof value === "object") {
     const interfaceName = key.charAt(0).toUpperCase() + key.slice(1);
     const nestedInterface = generateTypeScriptInterface(value, interfaceName);
-    nestedInterfaces.push(nestedInterface);
-    return interfaceName;
+    return { type: interfaceName, nested: [nestedInterface] };
   }
-  return typeof value;
+  const tsType = typeof value;
+  return { type: tsType === "undefined" ? `${tsType}?` : tsType, nested: [] };
 }
 
 export default function JsonConverter() {
