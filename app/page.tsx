@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { debounce } from "lodash";
+import AdBanner from "@/components/AdBanner";
 
 // Function to convert JSON to TypeScript interface
 function jsonToTypeScript(json: string): string {
@@ -164,175 +165,179 @@ export default function JsonConverter() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-white md:text-4xl">
-            JSON to TypeScript Converter
-          </h1>
-          <p className="text-slate-400">
-            Convert JSON to TypeScript type definitions instantly
-          </p>
-        </div>
+      <div>
+        <AdBanner />{" "}
+        <div className="mx-auto max-w-6xl space-y-8">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold text-white md:text-4xl">
+              JSON to TypeScript Converter
+            </h1>
+            <p className="text-slate-400">
+              Convert JSON to TypeScript type definitions instantly
+            </p>
+          </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur">
-            <div className="flex items-center justify-between border-b border-slate-700 p-4">
-              <div className="flex items-center gap-2">
-                <FileJson className="h-5 w-5 text-blue-400" />
-                <h2 className="font-semibold text-white">JSON Input</h2>
-                {!isValidJson && jsonInput && (
-                  <AlertCircle className="h-5 w-5 text-red-400" />
-                )}
-                {isValidJson && jsonInput && (
-                  <Check className="h-5 w-5 text-green-400" />
-                )}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="border-slate-700 bg-slate-900/50 backdrop-blur">
+              <div className="flex items-center justify-between border-b border-slate-700 p-4">
+                <div className="flex items-center gap-2">
+                  <FileJson className="h-5 w-5 text-blue-400" />
+                  <h2 className="font-semibold text-white">JSON Input</h2>
+                  {!isValidJson && jsonInput && (
+                    <AlertCircle className="h-5 w-5 text-red-400" />
+                  )}
+                  {isValidJson && jsonInput && (
+                    <Check className="h-5 w-5 text-green-400" />
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={handlePaste}
+                        >
+                          <Clipboard className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Paste JSON</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={handleFormat}
+                        >
+                          <FileCode className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Format JSON</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={loadExample}
+                        >
+                          <FileDown className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Load Example</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={() => {
+                            setJsonInput("");
+                            setTsOutput("");
+                            setIsValidJson(true);
+                            if (editorRef.current) {
+                              editorRef.current.setValue("");
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Clear input</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        onClick={handlePaste}
-                      >
-                        <Clipboard className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Paste JSON</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        onClick={handleFormat}
-                      >
-                        <FileCode className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Format JSON</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        onClick={loadExample}
-                      >
-                        <FileDown className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Load Example</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        onClick={() => {
-                          setJsonInput("");
-                          setTsOutput("");
-                          setIsValidJson(true);
-                          if (editorRef.current) {
-                            editorRef.current.setValue("");
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Clear input</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div className="p-0">
+                <Editor
+                  height="500px"
+                  defaultLanguage="json"
+                  theme="vs-dark"
+                  value={jsonInput}
+                  onChange={handleJsonChange}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    lineNumbers: "on",
+                    scrollBeyondLastLine: false,
+                    wordWrap: "on",
+                    padding: { top: 16, bottom: 16 },
+                    formatOnPaste: true,
+                    formatOnType: true,
+                  }}
+                  onMount={(editor) => {
+                    editorRef.current = editor;
+                  }}
+                />
               </div>
-            </div>
-            <div className="p-0">
-              <Editor
-                height="500px"
-                defaultLanguage="json"
-                theme="vs-dark"
-                value={jsonInput}
-                onChange={handleJsonChange}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  lineNumbers: "on",
-                  scrollBeyondLastLine: false,
-                  wordWrap: "on",
-                  padding: { top: 16, bottom: 16 },
-                  formatOnPaste: true,
-                  formatOnType: true,
-                }}
-                onMount={(editor) => {
-                  editorRef.current = editor;
-                }}
-              />
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur">
-            <div className="flex items-center justify-between border-b border-slate-700 p-4">
-              <div className="flex items-center gap-2">
-                <FileType2 className="h-5 w-5 text-green-400" />
-                <h2 className="font-semibold text-white">
-                  TypeScript Definition
-                </h2>
+            <Card className="border-slate-700 bg-slate-900/50 backdrop-blur">
+              <div className="flex items-center justify-between border-b border-slate-700 p-4">
+                <div className="flex items-center gap-2">
+                  <FileType2 className="h-5 w-5 text-green-400" />
+                  <h2 className="font-semibold text-white">
+                    TypeScript Definition
+                  </h2>
+                </div>
+                <div className="flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={() => handleCopy(tsOutput)}
+                          disabled={!tsOutput}
+                        >
+                          {isCopied ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isCopied ? "Copied!" : "Copy TypeScript"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        onClick={() => handleCopy(tsOutput)}
-                        disabled={!tsOutput}
-                      >
-                        {isCopied ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{isCopied ? "Copied!" : "Copy TypeScript"}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div className="p-0">
+                <Editor
+                  height="500px"
+                  defaultLanguage="typescript"
+                  theme="vs-dark"
+                  value={tsOutput}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    lineNumbers: "on",
+                    readOnly: true,
+                    scrollBeyondLastLine: false,
+                    wordWrap: "on",
+                    padding: { top: 16, bottom: 16 },
+                  }}
+                />
               </div>
-            </div>
-            <div className="p-0">
-              <Editor
-                height="500px"
-                defaultLanguage="typescript"
-                theme="vs-dark"
-                value={tsOutput}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  lineNumbers: "on",
-                  readOnly: true,
-                  scrollBeyondLastLine: false,
-                  wordWrap: "on",
-                  padding: { top: 16, bottom: 16 },
-                }}
-              />
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
+        </div>{" "}
+        <AdBanner />{" "}
       </div>
     </div>
   );
